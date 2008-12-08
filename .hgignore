@@ -1,0 +1,7 @@
+syntax: glob
+
+# ignore all temporary files
+~*
+
+# ignore all compiled python files
+*.pyc
