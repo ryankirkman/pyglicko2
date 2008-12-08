@@ -27,6 +27,9 @@ class Player:
         update_player(list[int], list[int], list[bool]) -> None
         """
         # Calculate pre - rating period rating deviation.
+        # This can be done either before or after updating ratings and 
+        # deviations, as even if all players are unrated, the rating deviation
+        # won't rise above 350.
         self.__preRatingRD()
         
         # Update rating.
