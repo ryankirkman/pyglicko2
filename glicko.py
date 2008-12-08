@@ -4,7 +4,7 @@ class Player:
     def __init__(self):
         # For testing purposes, preload the values assigned to an unrated player.
         self.__rating = 1500
-        self.__rd = 350
+        self.__rd = 200
         
     def __preRatingRD(self, t = 1, c = 63.2):
         """ Calculates and updates the player's rating deviation for the
