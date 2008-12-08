@@ -22,9 +22,9 @@ class Player:
         self.__rd = max( self.__rd, 30 )
         
     def update_player(self, rating_list, RD_list, outcome_list):
-        """ Calculates the new rating of the player.
+        """ Calculates the new rating and rating deviation of the player.
         
-        new_rating() -> int
+        update_player(list[int], list[int], list[bool]) -> None
         """
         # Calculate pre - rating period rating deviation.
         self.__preRatingRD()
@@ -78,6 +78,8 @@ class Player:
         __q() -> float
         """
         return math.log(10)/400
+        
+    # The following functions are just getters, which I was using for debugging.
         
     def E(self, p2rating, p2RD):
         return self.__E(p2rating, p2RD)
