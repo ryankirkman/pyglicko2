@@ -6,6 +6,8 @@ class Player:
         self.__rating = rating
         self.__rd = rd
         self.__vol = vol
+        #The system constant, which constrains the change in volatility over time.
+        self.__tau = 0.5
         
         # The constant used to convert between the glicko and glicko2 scales
         #self.__glicko2const = 173.7178
@@ -122,7 +124,7 @@ class Player:
 # Create a player called Ryan
 Ryan = Player()
 
-# Following the example at: http://math.bu.edu/people/mg/glicko/glicko.doc/glicko.html
+# Following the example at: http://math.bu.edu/people/mg/glicko/glicko2.doc/example.html
 # Pretend Ryan plays players of ratings 1400, ,1550 and 1700
 # and rating deviations 30, 100 and 300 respectively
 # with outcomes 1, 0 and 0.
