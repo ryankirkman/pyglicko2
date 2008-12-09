@@ -65,7 +65,7 @@ class Player:
         tempSum = 0
         for i in range(len(rating_list)):
             tempSum += self.__g(RD_list[i]) * (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
-        return self.__v(rating_list, RD_list) * temp2
+        return self.__v(rating_list, RD_list) * tempSum
         
     def __v(self, rating_list, RD_list):
         """ The v function of the Glicko2 system.
