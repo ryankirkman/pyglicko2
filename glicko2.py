@@ -1,7 +1,7 @@
 import math
 
 class Player:
-    def __init__(self, rating = 0, rd = 1.15129, vol = 0.06):
+    def __init__(self, rating = 0, rd = (200/173.7178), vol = 0.06):
         # For testing purposes, preload the values assigned to an unrated player.
         self.__rating = rating
         self.__rd = rd
@@ -39,7 +39,7 @@ class Player:
         tempSum = 0
         for i in range(len(rating_list)):
             tempSum += self.__g(RD_list[i]) * (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
-        self.__rating += tempSum
+        self.__rating += math.pow(self.__rd, 2) * tempSum
         
         
     def __newVol(self, rating_list, RD_list, outcome_list):
@@ -47,7 +47,7 @@ class Player:
         
         __newVol(list, list, list) -> float
         """
-        #i = 1
+        i = 0
         v = self.__v(rating_list, RD_list)
         delta = self.__delta(rating_list, RD_list, outcome_list)
         a = math.log(math.pow(self.__vol, 2))
@@ -59,10 +59,15 @@ class Player:
             # New iteration, so x(i) becomes x(i-1)
             x0 = x1
             d = math.pow(self.__rating, 2) + self.__v(rating_list, RD_list) + math.exp(x0)
-            h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
-            h2 = -1 / tau - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
+            h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
+            / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
+            h2 = -1 / tau - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) \
+            / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) \
+            * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
             x1 = x0 - (h1 / h2)
+            i += 1
         
+        print i
         return math.exp(x1 / 2)
         
     def __delta(self, rating_list, RD_list, outcome_list):
@@ -138,7 +143,8 @@ class Player:
 Ryan = Player()
 
 # Following the example at: http://math.bu.edu/people/mg/glicko/glicko2.doc/example.html
-# Pretend Ryan plays players of ratings 1400, ,1550 and 1700
+# Pretend Ryan (of rating 1500 and rating deviation 200)
+# plays players of ratings 1400, 1550 and 1700
 # and rating deviations 30, 100 and 300 respectively
 # with outcomes 1, 0 and 0.
 print "Old Rating: " + str(Ryan.rating())
