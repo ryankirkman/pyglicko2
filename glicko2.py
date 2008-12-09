@@ -92,14 +92,6 @@ class Player:
         """
         return 1 / math.sqrt(1 + 3 * math.pow(RD, 2) / math.pow(math.pi, 2))
         
-    def __q(self):
-        """ The q constant of the Glicko system. 
-        This could be made constant if a speed boost is necessary.
-        
-        __q() -> float
-        """
-        return math.log(10)/400
-        
     # The following functions are just getters, which I was using for debugging.
         
     def E(self, p2rating, p2RD):
