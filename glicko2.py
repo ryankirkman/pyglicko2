@@ -17,47 +17,53 @@ class Player:
         #self.__g2rd = self.__rd / self.__glicko2const
         
         
-    def __preRatingRD(self, t = 1, c = 63.2):
+    def __preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
         beginning of a rating period.
         
-        preRatingRD(int, float) -> None
+        preRatingRD() -> None
         """
-        
-        # Calculate the new rating deviation.
-        self.__rd = math.sqrt( math.pow ( self.__rd, 2 ) + 
-            ( math.pow ( c, 2 ) * t ) )
-        # Ensure RD doesn't rise above that of an unrated player.
-        self.__rd = min( self.__rd, 350 )
-        # Ensure RD doesn't drop too low so rating can still change appreciably.
-        self.__rd = max( self.__rd, 30 )
+        self.__rd = math.sqrt(math.pow(self.__rd, 2) + math.pow(self.__vol, 2))
         
     def update_player(self, rating_list, RD_list, outcome_list):
         """ Calculates the new rating and rating deviation of the player.
         
         update_player(list[int], list[int], list[bool]) -> None
         """
-        # Calculate pre - rating period rating deviation.
-        # This can be done either before or after updating ratings and 
-        # deviations, as even if all players are unrated, the rating deviation
-        # won't rise above 350.
+        v = self.__v(rating_list, RD_list)
+        self.__vol = self.__newVol(rating_list, RD_list, outcome_list)
         self.__preRatingRD()
         
-        # Update rating.
-        d2 = self.__d2(rating_list, RD_list)
-        rPrime = (self.__q() / ((1 / math.pow(self.__rd, 2)) + 
-            (1 / d2)))
+        self.__rd = 1 / math.sqrt((1 / math.pow(self.__rd, 2)) + (1 / v))
         
         tempSum = 0
         for i in range(len(rating_list)):
             tempSum += self.__g(RD_list[i]) * (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
+        self.__rating += tempSum
         
-        rPrime *= tempSum
-        rPrime += self.__rating
-        self.__rating = rPrime
         
-        # Update rating deviation.
-        self.__rd = math.sqrt(1 / ((1 / math.pow(self.__rd, 2)) + (1 / d2)))
+    def __newVol(self, rating_list, RD_list, outcome_list):
+        """ Calculating the new volatility as per the Glicko2 system.
+        
+        __newVol(list, list, list) -> float
+        """
+        #i = 1
+        v = self.__v(rating_list, RD_list)
+        delta = self.__delta(rating_list, RD_list, outcome_list)
+        a = math.log(math.pow(self.__vol, 2))
+        tau = self.__tau
+        x0 = a
+        x1 = 0
+        
+        while round(x0, 5) != round(x1, 5):
+            # New iteration, so x(i) becomes x(i-1)
+            x0 = x1
+            d = math.pow(self.__rating, 2) + self.__v(rating_list, RD_list) + math.exp(x0)
+            h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
+            h2 = -1 / tau - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
+            x1 = x0 - (h1 / h2)
+        
+        return math.exp(x1 / 2)
         
     def __delta(self, rating_list, RD_list, outcome_list):
         """ The delta function of the Glicko2 system.
@@ -107,14 +113,21 @@ class Player:
         
         rating() -> int
         """
-        return self.__rating
+        return self.__rating * 173.7178 + 1500
         
     def rd(self):
         """ Returns the Rating Deviation.
         
         rd() -> int
         """
-        return self.__rd
+        return self.__rd * 173.7178
+        
+    def vol(self):
+        """ Returns the volatility.
+        
+        vol() -> float
+        """
+        return self.__vol
 
 
 ##########
@@ -130,7 +143,9 @@ Ryan = Player()
 # with outcomes 1, 0 and 0.
 print "Old Rating: " + str(Ryan.rating())
 print "Old Rating Deviation: " + str(Ryan.rd())
+print "Old Volatility: " + str(Ryan.vol())
 Ryan.update_player([(x - 1500) / 173.7178 for x in [1400, 1550, 1700]],
     [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])
 print "New Rating: " + str(Ryan.rating())
 print "New Rating Deviation: " + str(Ryan.rd())
+print "New Volatility: " + str(Ryan.vol())
