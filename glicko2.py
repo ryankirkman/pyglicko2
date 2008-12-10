@@ -9,13 +9,6 @@ class Player:
         #The system constant, which constrains the change in volatility over time.
         self.__tau = 0.5
         
-        # The constant used to convert between the glicko and glicko2 scales
-        #self.__glicko2const = 173.7178
-        
-        # Convert to the glicko2 scale.
-        #self.__g2rating = (self.__rating - 1500) / self.__glicko2const
-        #self.__g2rd = self.__rd / self.__glicko2const
-        
         
     def __preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
