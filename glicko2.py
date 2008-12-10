@@ -31,7 +31,7 @@ class Player:
         update_player(list[int], list[int], list[bool]) -> None
         """
         v = self.__v(rating_list, RD_list)
-        self.__vol = self.__newVol(rating_list, RD_list, outcome_list)
+        self.__vol = self.__newVol(rating_list, RD_list, outcome_list, v)
         self.__preRatingRD()
         
         self.__rd = 1 / math.sqrt((1 / math.pow(self.__rd, 2)) + (1 / v))
@@ -42,23 +42,23 @@ class Player:
         self.__rating += math.pow(self.__rd, 2) * tempSum
         
         
-    def __newVol(self, rating_list, RD_list, outcome_list):
+    def __newVol(self, rating_list, RD_list, outcome_list, v):
         """ Calculating the new volatility as per the Glicko2 system.
         
         __newVol(list, list, list) -> float
         """
         i = 0
-        v = self.__v(rating_list, RD_list)
-        delta = self.__delta(rating_list, RD_list, outcome_list)
+        delta = self.__delta(rating_list, RD_list, outcome_list, v)
         a = math.log(math.pow(self.__vol, 2))
         tau = self.__tau
         x0 = a
         x1 = 0
+        print a
         
         while round(x0, 5) != round(x1, 5):
             # New iteration, so x(i) becomes x(i-1)
             x0 = x1
-            d = math.pow(self.__rating, 2) + self.__v(rating_list, RD_list) + math.exp(x0)
+            d = math.pow(self.__rating, 2) + v + math.exp(x0)
             h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
             / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
             h2 = -1 / tau - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) \
@@ -68,9 +68,11 @@ class Player:
             i += 1
         
         print i
+        print x0, x1
+        print round(x0, 5), round(x1, 5)
         return math.exp(x1 / 2)
         
-    def __delta(self, rating_list, RD_list, outcome_list):
+    def __delta(self, rating_list, RD_list, outcome_list, v):
         """ The delta function of the Glicko2 system.
         
         __delta(list, list, list) -> float
@@ -78,7 +80,7 @@ class Player:
         tempSum = 0
         for i in range(len(rating_list)):
             tempSum += self.__g(RD_list[i]) * (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
-        return self.__v(rating_list, RD_list) * tempSum
+        return v * tempSum
         
     def __v(self, rating_list, RD_list):
         """ The v function of the Glicko2 system.
