@@ -53,23 +53,18 @@ class Player:
         tau = self.__tau
         x0 = a
         x1 = 0
-        print a
         
-        while round(x0, 5) != round(x1, 5):
+        while x0 != x1:
             # New iteration, so x(i) becomes x(i-1)
             x0 = x1
             d = math.pow(self.__rating, 2) + v + math.exp(x0)
             h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
             / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
-            h2 = -1 / tau - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) \
+            h2 = -1 / math.pow(tau, 2) - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) \
             / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) \
             * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
             x1 = x0 - (h1 / h2)
-            i += 1
-        
-        print i
-        print x0, x1
-        print round(x0, 5), round(x1, 5)
+
         return math.exp(x1 / 2)
         
     def __delta(self, rating_list, RD_list, outcome_list, v):
