@@ -1,4 +1,4 @@
-import math
+import math, timeit
 
 class Player:
     def __init__(self, rating = 0, rd = (200/173.7178), vol = 0.06):
@@ -129,19 +129,29 @@ class Player:
 # The test area. #
 ##########
 
-# Create a player called Ryan
-Ryan = Player()
-
-# Following the example at: http://math.bu.edu/people/mg/glicko/glicko2.doc/example.html
-# Pretend Ryan (of rating 1500 and rating deviation 200)
-# plays players of ratings 1400, 1550 and 1700
-# and rating deviations 30, 100 and 300 respectively
-# with outcomes 1, 0 and 0.
-print "Old Rating: " + str(Ryan.rating())
-print "Old Rating Deviation: " + str(Ryan.rd())
-print "Old Volatility: " + str(Ryan.vol())
-Ryan.update_player([(x - 1500) / 173.7178 for x in [1400, 1550, 1700]],
-    [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])
-print "New Rating: " + str(Ryan.rating())
-print "New Rating Deviation: " + str(Ryan.rd())
-print "New Volatility: " + str(Ryan.vol())
+if __name__ == "__main__":
+    # Create a player called Ryan
+    Ryan = Player()
+    # Following the example at: http://math.bu.edu/people/mg/glicko/glicko2.doc/example.html
+    # Pretend Ryan (of rating 1500 and rating deviation 200)
+    # plays players of ratings 1400, 1550 and 1700
+    # and rating deviations 30, 100 and 300 respectively
+    # with outcomes 1, 0 and 0.
+    print "Old Rating: " + str(Ryan.rating())
+    print "Old Rating Deviation: " + str(Ryan.rd())
+    print "Old Volatility: " + str(Ryan.vol())
+    Ryan.update_player([(x - 1500) / 173.7178 for x in [1400, 1550, 1700]],
+        [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])
+    print "New Rating: " + str(Ryan.rating())
+    print "New Rating Deviation: " + str(Ryan.rd())
+    print "New Volatility: " + str(Ryan.vol())
+    
+    # Uncomment the below code to time the Glicko implementation
+    """
+    print "\nThe time taken to perform 10,000"
+    print "separate calculations (in seconds) was:"
+    print timeit.Timer("Ryan = Player(); Ryan.update_player([(x - 1500) / 173.7178 \
+    for x in [1400, 1550, 1700]], \
+    [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])", \
+        "from __main__ import Player").repeat(1, 10000)
+    """
