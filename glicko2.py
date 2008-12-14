@@ -124,6 +124,14 @@ class Player:
         """
         return self.__vol
 
+    def did_not_compete(self):
+        """ Applies Step 6 of the algorithm. Use this for
+        players who did not compete in the rating period.
+
+        did_not_compete() -> None
+        """
+        self.__preRatingRD()
+
 
 ##########
 # The test area. #
