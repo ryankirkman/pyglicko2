@@ -1,20 +1,22 @@
-import math, timeit
+import math
 
 class Player:
     def __init__(self, rating = 0, rd = (200/173.7178), vol = 0.06):
-        # For testing purposes, preload the values assigned to an unrated player.
+        # For testing purposes, preload the values
+        # assigned to an unrated player.
         self.__rating = rating
         self.__rd = rd
         self.__vol = vol
-        #The system constant, which constrains the change in volatility over time.
+        # The system constant, which constrains
+        # the change in volatility over time.
         self.__tau = 0.5
-        
-        
+             
     def __preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
         beginning of a rating period.
         
         preRatingRD() -> None
+        
         """
         self.__rd = math.sqrt(math.pow(self.__rd, 2) + math.pow(self.__vol, 2))
         
@@ -22,6 +24,7 @@ class Player:
         """ Calculates the new rating and rating deviation of the player.
         
         update_player(list[int], list[int], list[bool]) -> None
+        
         """
         v = self.__v(rating_list, RD_list)
         self.__vol = self.__newVol(rating_list, RD_list, outcome_list, v)
@@ -31,7 +34,8 @@ class Player:
         
         tempSum = 0
         for i in range(len(rating_list)):
-            tempSum += self.__g(RD_list[i]) * (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
+            tempSum += self.__g(RD_list[i]) * \
+                       (outcome_list[i] - self.__E(rating_list[i], RD_list[i]))
         self.__rating += math.pow(self.__rd, 2) * tempSum
         
         
@@ -39,6 +43,7 @@ class Player:
         """ Calculating the new volatility as per the Glicko2 system.
         
         __newVol(list, list, list) -> float
+        
         """
         i = 0
         delta = self.__delta(rating_list, RD_list, outcome_list, v)
@@ -53,7 +58,8 @@ class Player:
             d = math.pow(self.__rating, 2) + v + math.exp(x0)
             h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
             / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
-            h2 = -1 / math.pow(tau, 2) - 0.5 * math.exp(x0) * (math.pow(self.__rating, 2) + v) \
+            h2 = -1 / math.pow(tau, 2) - 0.5 * math.exp(x0) * \
+            (math.pow(self.__rating, 2) + v) \
             / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) \
             * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
             x1 = x0 - (h1 / h2)
@@ -64,6 +70,7 @@ class Player:
         """ The delta function of the Glicko2 system.
         
         __delta(list, list, list) -> float
+        
         """
         tempSum = 0
         for i in range(len(rating_list)):
@@ -74,6 +81,7 @@ class Player:
         """ The v function of the Glicko2 system.
         
         __v(list[int], list[int]) -> float
+        
         """
         tempSum = 0
         for i in range(len(rating_list)):
@@ -85,13 +93,16 @@ class Player:
         """ The Glicko E function.
         
         __E(int) -> float
+        
         """
-        return 1 / (1 + math.exp(-1 * self.__g(p2RD) * (self.__rating - p2rating)))
+        return 1 / (1 + math.exp(-1 * self.__g(p2RD) * \
+                                 (self.__rating - p2rating)))
         
     def __g(self, RD):
         """ The Glicko2 g(RD) function.
         
         __g() -> float
+        
         """
         return 1 / math.sqrt(1 + 3 * math.pow(RD, 2) / math.pow(math.pi, 2))
         
@@ -107,6 +118,7 @@ class Player:
         """ Returns rating.
         
         rating() -> int
+        
         """
         return self.__rating * 173.7178 + 1500
         
@@ -114,6 +126,7 @@ class Player:
         """ Returns the Rating Deviation.
         
         rd() -> int
+        
         """
         return self.__rd * 173.7178
         
@@ -121,6 +134,7 @@ class Player:
         """ Returns the volatility.
         
         vol() -> float
+        
         """
         return self.__vol
 
@@ -129,37 +143,6 @@ class Player:
         players who did not compete in the rating period.
 
         did_not_compete() -> None
+        
         """
         self.__preRatingRD()
-
-
-##########
-# The test area. #
-##########
-
-if __name__ == "__main__":
-    # Create a player called Ryan
-    Ryan = Player()
-    # Following the example at: http://math.bu.edu/people/mg/glicko/glicko2.doc/example.html
-    # Pretend Ryan (of rating 1500 and rating deviation 200)
-    # plays players of ratings 1400, 1550 and 1700
-    # and rating deviations 30, 100 and 300 respectively
-    # with outcomes 1, 0 and 0.
-    #sprint "Old Rating: " + str(Ryan.rating())
-    print("Old Rating Deviation: " + str(Ryan.rd()))
-    print("Old Volatility: " + str(Ryan.vol()))
-    Ryan.update_player([(x - 1500) / 173.7178 for x in [1400, 1550, 1700]],
-        [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])
-    print("New Rating: " + str(Ryan.rating()))
-    print("New Rating Deviation: " + str(Ryan.rd()))
-    print("New Volatility: " + str(Ryan.vol()))
-    
-    # Uncomment the below code to time the Glicko implementation
-    
-    print("\nThe time taken to perform 10,000")
-    print("separate calculations (in seconds) was:")
-    print(timeit.Timer("Ryan = Player(); Ryan.update_player([(x - 1500) / 173.7178 \
-    for x in [1400, 1550, 1700]], \
-    [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])", \
-        "from __main__ import Player").repeat(1, 10000))
-    
