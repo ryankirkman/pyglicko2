@@ -106,14 +106,6 @@ class Player:
         """
         return 1 / math.sqrt(1 + 3 * math.pow(RD, 2) / math.pow(math.pi, 2))
         
-    # The following functions are just getters, which I was using for debugging.
-        
-    def E(self, p2rating, p2RD):
-        return self.__E(p2rating, p2RD)
-        
-    def v(self, rating_list = [], RD_list = []):
-        return self.__d2(rating_list, RD_list)
-        
     def rating(self):
         """ Returns rating.
         
