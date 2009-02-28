@@ -10,14 +10,14 @@ def exampleCase():
     # plays players of ratings 1400, 1550 and 1700
     # and rating deviations 30, 100 and 300 respectively
     # with outcomes 1, 0 and 0.
-    #sprint "Old Rating: " + str(Ryan.rating())
-    print("Old Rating Deviation: " + str(Ryan.rd()))
-    print("Old Volatility: " + str(Ryan.vol()))
+    #sprint "Old Rating: " + str(Ryan.rating)
+    print("Old Rating Deviation: " + str(Ryan.rd))
+    print("Old Volatility: " + str(Ryan.vol))
     Ryan.update_player([(x - 1500) / 173.7178 for x in [1400, 1550, 1700]],
         [x / 173.7178 for x in [30, 100, 300]], [1, 0, 0])
-    print("New Rating: " + str(Ryan.rating()))
-    print("New Rating Deviation: " + str(Ryan.rd()))
-    print("New Volatility: " + str(Ryan.vol()))
+    print("New Rating: " + str(Ryan.rating))
+    print("New Rating Deviation: " + str(Ryan.rd))
+    print("New Volatility: " + str(Ryan.vol))
 
 def timingExample(runs = 10000):
     print("\nThe time taken to perform " + str(runs))
