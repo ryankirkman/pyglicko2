@@ -26,15 +26,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 import math
 
 class Player:
+    # Class attribute
+    # The system constant, which constrains
+    # the change in volatility over time.
+    _tau = 0.5
+
     def __init__(self, rating = 0, rd = (200/173.7178), vol = 0.06):
         # For testing purposes, preload the values
         # assigned to an unrated player.
         self.rating = rating
         self.rd = rd
         self.vol = vol
-        # The system constant, which constrains
-        # the change in volatility over time.
-        self._tau = 0.5
              
     def _preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
