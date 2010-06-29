@@ -31,13 +31,29 @@ class Player:
     # the change in volatility over time.
     _tau = 0.5
 
-    def __init__(self, rating = 0, rd = (200/173.7178), vol = 0.06):
+    def getRating(self):
+        return (self.__rating * 173.7178) + 1500 
+
+    def setRating(self, rating):
+        self.__rating = (rating - 1500) / 173.7178
+
+    rating = property(getRating, setRating)
+
+    def getRd(self):
+        return self.__rd * 173.7178
+
+    def setRd(self, rd):
+        self.__rd = rd / 173.7178
+
+    rd = property(getRd, setRd)
+     
+    def __init__(self, rating = 1500, rd = 350, vol = 0.06):
         # For testing purposes, preload the values
         # assigned to an unrated player.
-        self.rating = rating
-        self.rd = rd
+        self.setRating(rating)
+        self.setRd(rd)
         self.vol = vol
-             
+            
     def _preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
         beginning of a rating period.
@@ -45,7 +61,7 @@ class Player:
         preRatingRD() -> None
         
         """
-        self.rd = math.sqrt(math.pow(self.rd, 2) + math.pow(self.vol, 2))
+        self.__rd = math.sqrt(math.pow(self.__rd, 2) + math.pow(self.vol, 2))
         
     def update_player(self, rating_list, RD_list, outcome_list):
         """ Calculates the new rating and rating deviation of the player.
@@ -53,17 +69,21 @@ class Player:
         update_player(list[int], list[int], list[bool]) -> None
         
         """
+        # Convert the rating and rating deviation values for internal use.
+        rating_list = [(x - 1500) / 173.7178 for x in rating_list]
+        RD_list = [x / 173.7178 for x in RD_list]
+
         v = self._v(rating_list, RD_list)
         self.vol = self._newVol(rating_list, RD_list, outcome_list, v)
         self._preRatingRD()
         
-        self.rd = 1 / math.sqrt((1 / math.pow(self.rd, 2)) + (1 / v))
+        self.__rd = 1 / math.sqrt((1 / math.pow(self.__rd, 2)) + (1 / v))
         
         tempSum = 0
         for i in range(len(rating_list)):
             tempSum += self._g(RD_list[i]) * \
                        (outcome_list[i] - self._E(rating_list[i], RD_list[i]))
-        self.rating += math.pow(self.rd, 2) * tempSum
+        self.__rating += math.pow(self.__rd, 2) * tempSum
         
         
     def _newVol(self, rating_list, RD_list, outcome_list, v):
@@ -82,13 +102,13 @@ class Player:
         while x0 != x1:
             # New iteration, so x(i) becomes x(i-1)
             x0 = x1
-            d = math.pow(self.rating, 2) + v + math.exp(x0)
+            d = math.pow(self.__rating, 2) + v + math.exp(x0)
             h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
             / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
             h2 = -1 / math.pow(tau, 2) - 0.5 * math.exp(x0) * \
-            (math.pow(self.rating, 2) + v) \
+            (math.pow(self.__rating, 2) + v) \
             / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) \
-            * (math.pow(self.rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
+            * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
             x1 = x0 - (h1 / h2)
 
         return math.exp(x1 / 2)
@@ -123,7 +143,7 @@ class Player:
         
         """
         return 1 / (1 + math.exp(-1 * self._g(p2RD) * \
-                                 (self.rating - p2rating)))
+                                 (self.__rating - p2rating)))
         
     def _g(self, RD):
         """ The Glicko2 g(RD) function.
