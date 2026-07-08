@@ -47,12 +47,14 @@ class Player:
 
     rd = property(getRd, setRd)
      
-    def __init__(self, rating = 1500, rd = 350, vol = 0.06):
+    def __init__(self, rating = 1500, rd = 350, vol = 0.06, tau = None):
         # For testing purposes, preload the values
         # assigned to an unrated player.
         self.setRating(rating)
         self.setRd(rd)
         self.vol = vol
+        if tau is not None:
+            self._tau = tau
             
     def _preRatingRD(self):
         """ Calculates and updates the player's rating deviation for the
@@ -65,10 +67,20 @@ class Player:
         
     def update_player(self, rating_list, RD_list, outcome_list):
         """ Calculates the new rating and rating deviation of the player.
-        
-        update_player(list[int], list[int], list[bool]) -> None
-        
+
+        Outcomes are 1 for a win, 0.5 for a draw and 0 for a loss.
+        An empty game list is treated as not competing (Step 6 only).
+
+        update_player(list[float], list[float], list[float]) -> None
+
         """
+        if not len(rating_list) == len(RD_list) == len(outcome_list):
+            raise ValueError("rating_list, RD_list and outcome_list "
+                             "must have the same length")
+        if not rating_list:
+            self.did_not_compete()
+            return
+
         # Convert the rating and rating deviation values for internal use.
         rating_list = [(x - 1500) / 173.7178 for x in rating_list]
         RD_list = [x / 173.7178 for x in RD_list]
@@ -88,31 +100,52 @@ class Player:
         
     def _newVol(self, rating_list, RD_list, outcome_list, v):
         """ Calculating the new volatility as per the Glicko2 system.
-        
-        _newVol(list, list, list) -> float
-        
-        """
-        i = 0
-        delta = self._delta(rating_list, RD_list, outcome_list, v)
-        a = math.log(math.pow(self.vol, 2))
-        tau = self._tau
-        x0 = a
-        x1 = 0
-        
-        while x0 != x1:
-            # New iteration, so x(i) becomes x(i-1)
-            x0 = x1
-            d = math.pow(self.__rating, 2) + v + math.exp(x0)
-            h1 = -(x0 - a) / math.pow(tau, 2) - 0.5 * math.exp(x0) \
-            / d + 0.5 * math.exp(x0) * math.pow(delta / d, 2)
-            h2 = -1 / math.pow(tau, 2) - 0.5 * math.exp(x0) * \
-            (math.pow(self.__rating, 2) + v) \
-            / math.pow(d, 2) + 0.5 * math.pow(delta, 2) * math.exp(x0) \
-            * (math.pow(self.__rating, 2) + v - math.exp(x0)) / math.pow(d, 3)
-            x1 = x0 - (h1 / h2)
 
-        return math.exp(x1 / 2)
-        
+        Uses the Illinois algorithm from the February 22, 2012 revision
+        of the algorithm (Step 5 of http://www.glicko.net/glicko/glicko2.pdf),
+        which replaced the unstable Newton-Raphson iteration.
+
+        _newVol(list, list, list, float) -> float
+
+        """
+        delta = self._delta(rating_list, RD_list, outcome_list, v)
+        phi = self.__rd
+        tau = self._tau
+        a = math.log(math.pow(self.vol, 2))
+        eps = 0.000001
+
+        def f(x):
+            ex = math.exp(x)
+            return (ex * (math.pow(delta, 2) - math.pow(phi, 2) - v - ex)) \
+                   / (2 * math.pow(math.pow(phi, 2) + v + ex, 2)) \
+                   - (x - a) / math.pow(tau, 2)
+
+        # Set the initial values A and B so that they bracket ln(vol'^2).
+        A = a
+        if math.pow(delta, 2) > math.pow(phi, 2) + v:
+            B = math.log(math.pow(delta, 2) - math.pow(phi, 2) - v)
+        else:
+            k = 1
+            while f(a - k * tau) < 0:
+                k += 1
+            B = a - k * tau
+
+        # Iteratively narrow the bracket until it is smaller than eps.
+        fA = f(A)
+        fB = f(B)
+        while math.fabs(B - A) > eps:
+            C = A + (A - B) * fA / (fB - fA)
+            fC = f(C)
+            if fC * fB <= 0:
+                A = B
+                fA = fB
+            else:
+                fA = fA / 2
+            B = C
+            fB = fC
+
+        return math.exp(A / 2)
+
     def _delta(self, rating_list, RD_list, outcome_list, v):
         """ The delta function of the Glicko2 system.
         
@@ -126,9 +159,9 @@ class Player:
         
     def _v(self, rating_list, RD_list):
         """ The v function of the Glicko2 system.
-        
-        _v(list[int], list[int]) -> float
-        
+
+        _v(list[float], list[float]) -> float
+
         """
         tempSum = 0
         for i in range(len(rating_list)):
@@ -138,9 +171,9 @@ class Player:
         
     def _E(self, p2rating, p2RD):
         """ The Glicko E function.
-        
-        _E(int) -> float
-        
+
+        _E(float, float) -> float
+
         """
         return 1 / (1 + math.exp(-1 * self._g(p2RD) * \
                                  (self.__rating - p2rating)))
