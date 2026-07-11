@@ -48,12 +48,19 @@ class Player:
     rd = property(getRd, setRd)
      
     def __init__(self, rating = 1500, rd = 350, vol = 0.06, tau = None):
+        """Create a player.
+
+        tau is the Glicko-2 system constant. Callers should use the same
+        value for every player in a rating system.
+        """
         # For testing purposes, preload the values
         # assigned to an unrated player.
         self.setRating(rating)
         self.setRd(rd)
         self.vol = vol
         if tau is not None:
+            if not math.isfinite(tau) or tau <= 0:
+                raise ValueError("tau must be a positive finite number")
             self._tau = tau
             
     def _preRatingRD(self):
