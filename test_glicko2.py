@@ -74,16 +74,16 @@ class SurprisingOutcomesTest(unittest.TestCase):
 
     def test_terminates_on_previously_hanging_input(self):
         # This input made the old exact-equality convergence test loop
-        # forever. The Illinois algorithm must terminate and produce
-        # finite values.
+        # forever. The Illinois algorithm must terminate and match the
+        # independently verified result.
         player = glicko2.Player(rating = 2710.0078, rd = 301.9688, vol = 0.2)
         player.update_player(
             [926.7, 1679.0, 1264.7, 1135.9, 800.0, 747.6],
             [25.1, 186.7, 62.5, 307.1, 191.8, 56.9],
             [0, 0, 0, 0, 0.5, 0])
-        self.assertTrue(math.isfinite(player.rating))
-        self.assertTrue(math.isfinite(player.rd))
-        self.assertTrue(math.isfinite(player.vol))
+        self.assertAlmostEqual(player.rating, 112.2757, delta = 0.001)
+        self.assertAlmostEqual(player.rd, 301.6729, delta = 0.001)
+        self.assertAlmostEqual(player.vol, 0.2140866, delta = 0.000001)
 
 
 class DidNotCompeteTest(unittest.TestCase):
@@ -111,6 +111,11 @@ class InputValidationTest(unittest.TestCase):
         player = glicko2.Player()
         with self.assertRaises(ValueError):
             player.update_player([1400, 1550], [30], [1, 0])
+
+    def test_invalid_tau_raises(self):
+        for tau in [0, -0.5, float("inf"), float("-inf"), float("nan")]:
+            with self.assertRaises(ValueError):
+                glicko2.Player(tau = tau)
 
 
 class PropertyTest(unittest.TestCase):
