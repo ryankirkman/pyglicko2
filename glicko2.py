@@ -59,7 +59,7 @@ class Player:
         self.setRd(rd)
         self.vol = vol
         if tau is not None:
-            if not math.isfinite(tau) or tau <= 0:
+            if math.isnan(tau) or math.isinf(tau) or tau <= 0:
                 raise ValueError("tau must be a positive finite number")
             self._tau = tau
             
