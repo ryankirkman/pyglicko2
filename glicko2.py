@@ -84,6 +84,8 @@ class Player:
         if not len(rating_list) == len(RD_list) == len(outcome_list):
             raise ValueError("rating_list, RD_list and outcome_list "
                              "must have the same length")
+        if any(math.isnan(x) or x < 0 or x > 1 for x in outcome_list):
+            raise ValueError("outcomes must be between 0 and 1")
         if not rating_list:
             self.did_not_compete()
             return
