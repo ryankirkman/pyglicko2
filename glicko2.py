@@ -35,6 +35,8 @@ class Player:
         return (self.__rating * 173.7178) + 1500 
 
     def setRating(self, rating):
+        if math.isnan(rating) or math.isinf(rating):
+            raise ValueError("rating must be finite")
         self.__rating = (rating - 1500) / 173.7178
 
     rating = property(getRating, setRating)
@@ -43,6 +45,8 @@ class Player:
         return self.__rd * 173.7178
 
     def setRd(self, rd):
+        if math.isnan(rd) or math.isinf(rd) or rd < 0:
+            raise ValueError("rd must be a non-negative finite number")
         self.__rd = rd / 173.7178
 
     rd = property(getRd, setRd)
@@ -58,6 +62,8 @@ class Player:
         self.setRating(rating)
         self.setRd(rd)
         self.vol = vol
+        if math.isnan(vol) or math.isinf(vol) or vol <= 0:
+            raise ValueError("vol must be a positive finite number")
         if tau is not None:
             if math.isnan(tau) or math.isinf(tau) or tau <= 0:
                 raise ValueError("tau must be a positive finite number")
